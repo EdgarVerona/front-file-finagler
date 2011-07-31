@@ -6,7 +6,7 @@ using System.Drawing.Drawing2D;
 
 namespace FrontFileFinagler
 {
-    public class ListViewEx : ListView
+    public class ListViewRecordable : ListView
     {
         private const string REORDER = "Reorder";
 
@@ -40,7 +40,7 @@ namespace FrontFileFinagler
             }
         }
 
-        public ListViewEx()
+        public ListViewRecordable()
             : base()
         {
             this.AllowRowReorder = true;
@@ -48,10 +48,24 @@ namespace FrontFileFinagler
             resetDraggingState();
         }
 
+        //-------------------------------------------------------------------------------------------
+        //-------------------------------------------------------------------------------------------
+        //-- DRAG AND DROP EVENT HANDLERS
+        //-------------------------------------------------------------------------------------------
+        //-------------------------------------------------------------------------------------------
+
+
+
         protected override void OnDragDrop(DragEventArgs e)
         {
-            resetDraggingState();
             base.OnDragDrop(e);
+
+            if (!_draggingItem)
+            {
+                return;
+            }
+            resetDraggingState();
+
             if (!this.AllowRowReorder)
             {
                 return;
@@ -145,27 +159,7 @@ namespace FrontFileFinagler
             }
         }
 
-        private void resetDraggingState()
-        {
-            resetItemColors();
-            _draggingItem = false;
-        }
-
-        private void resetItemColors()
-        {
-            if (_lastHoveredItem != null)
-            { 
-                _lastHoveredItem.BackColor = this.BackColor;
-                _lastHoveredItem = null;
-            }
-        }
-
-        private void setCurrentItem(ListViewItem item)
-        {
-            item.BackColor = Color.Aqua;
-            _lastHoveredItem = item;
-        }
-
+        
         protected override void OnDragEnter(DragEventArgs e)
         {
             base.OnDragEnter(e);
@@ -205,27 +199,36 @@ namespace FrontFileFinagler
             base.DoDragDrop(REORDER, DragDropEffects.Move);
         }
 
-        protected override void OnPaint(PaintEventArgs e)
-        {
-            base.OnPaint(e);
 
+
+        //-------------------------------------------------------------------------------------------
+        //-------------------------------------------------------------------------------------------
+        //-- PRIVATE METHODS
+        //-------------------------------------------------------------------------------------------
+        //-------------------------------------------------------------------------------------------
+
+
+        private void resetDraggingState()
+        {
+            resetItemColors();
+            _draggingItem = false;
+        }
+
+        private void resetItemColors()
+        {
             if (_lastHoveredItem != null)
             {
-                int heightThreshold = _lastHoveredItem.Position.Y + (_lastHoveredItem.Bounds.Height / 2);
-
-                int lineHeight = _lastHoveredItem.Bounds.Y;
-                int linewidth = _lastHoveredItem.Bounds.X + _lastHoveredItem.Bounds.Width;
-
-                if (_lastPoint.Y >= heightThreshold)
-                {
-                    lineHeight += _lastHoveredItem.Bounds.Height;
-                }
-
-                Pen pen = new Pen(Color.Black);
-                e.Graphics.DrawLine(pen, _lastHoveredItem.Bounds.X, lineHeight, linewidth, lineHeight);
-
+                _lastHoveredItem.BackColor = this.BackColor;
+                _lastHoveredItem = null;
             }
         }
+
+        private void setCurrentItem(ListViewItem item)
+        {
+            item.BackColor = Color.Aqua;
+            _lastHoveredItem = item;
+        }
+
 
     }
 }

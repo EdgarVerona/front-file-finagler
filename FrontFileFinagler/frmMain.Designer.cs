@@ -34,7 +34,7 @@
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.importPlaylistToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.listFiles = new FrontFileFinagler.ListViewEx();
+            this.listFiles = new FrontFileFinagler.ListViewRecordable();
             this.columnFileName = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
@@ -151,7 +151,7 @@
 
         #endregion
 
-        private ListViewEx listFiles;
+        private ListViewRecordable listFiles;
         private System.Windows.Forms.ColumnHeader columnFileName;
         private System.Windows.Forms.SplitContainer splitContainer1;
         private System.Windows.Forms.Button btnChangeDates;
