@@ -232,7 +232,8 @@ namespace FrontFileFinagler
                 else
                 {
                     // Insert after the selected item.
-                    listFiles.Items.Insert(itemToInsertAfter.Index + 1, item);
+                    ListViewItem newItem = listFiles.Items.Insert(itemToInsertAfter.Index + 1, item);
+                    itemToInsertAfter = newItem;
                 }
             }
 
