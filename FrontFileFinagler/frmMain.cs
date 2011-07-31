@@ -57,29 +57,11 @@ namespace FrontFileFinagler
             {
                 string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
 
-                List<FileDetail> fileDetails = new List<FileDetail>();
-
-                for (int index = 0; index < files.Length; index++)
-                {
-                    string fileName = files[index];
-
-                    FileDetail detail = new FileDetail(fileName);
-
-                    fileDetails.Add(detail);
-                }
-
-                IEnumerable<FileDetail> sortedFileDetails = SortIncomingFiles(fileDetails);
-
-                foreach (FileDetail fileDetail in sortedFileDetails)
-                {
-                    ListViewItem item = new ListViewItem(fileDetail.FileName);
-                    item.Tag = fileDetail;
-
-                    listFiles.Items.Add(item);
-                }
+                LoadFiles(files);
 
             }   
         }
+
 
         //--------------------------------------------------------------------------------------
         //--------------------------------------------------------------------------------------
@@ -120,7 +102,22 @@ namespace FrontFileFinagler
         {
             OpenFileDialog dialog = new OpenFileDialog();
 
-            dialog.ShowDialog(this);
+            dialog.Filter = "";
+            dialog.CheckFileExists = true;
+            dialog.SupportMultiDottedExtensions = true;
+
+            DialogResult result = dialog.ShowDialog(this);
+
+            if (result == DialogResult.OK)
+            {
+                string file = dialog.FileName;
+
+                PlaylistLoadStrategy loader = new PlaylistLoadStrategy();
+
+                List<string> files = loader.GetFilePaths(file);
+
+                LoadFiles(files);
+            }
         }
 
         private void exitToolStripMenuItem_Click(object sender, EventArgs e)
@@ -143,7 +140,7 @@ namespace FrontFileFinagler
 
             if (string.IsNullOrEmpty(sortBy))
             {
-                sortBy = Constants.Modified;
+                sortBy = FileDateConstants.Modified;
             }
             string[] sortByList = sortBy.Split('|');
 
@@ -151,10 +148,10 @@ namespace FrontFileFinagler
             {
                 switch (sortByItem)
                 {
-                    case Constants.Accessed:
+                    case FileDateConstants.Accessed:
                         File.SetLastAccessTime(detail.OriginalPath, timeIterator);
                         break;
-                    case Constants.Created:
+                    case FileDateConstants.Created:
                         File.SetCreationTime(detail.OriginalPath, timeIterator);
                         break;
                     default:
@@ -174,10 +171,10 @@ namespace FrontFileFinagler
 
             switch (sortBy)
             {
-                case Constants.Created:
+                case FileDateConstants.Created:
                     sortedFileDetails = fileDetails.OrderBy(detail => detail.CreationTime);
                     break;
-                case Constants.Accessed:
+                case FileDateConstants.Accessed:
                     sortedFileDetails = fileDetails.OrderBy(detail => detail.AccessTime);
                     break;
                 default:
@@ -188,6 +185,48 @@ namespace FrontFileFinagler
             return sortedFileDetails;
         }
 
+
+        private void LoadFiles(IEnumerable<string> files)
+        {
+            List<FileDetail> fileDetails = new List<FileDetail>();
+            List<string> errorFiles = new List<string>();
+
+            foreach (string fileName in files)
+            {
+                if (File.Exists(fileName))
+                {
+                    FileDetail detail = new FileDetail(fileName);
+
+                    fileDetails.Add(detail);
+                }
+                else
+                {
+                    errorFiles.Add(fileName);
+                }
+            }
+
+            IEnumerable<FileDetail> sortedFileDetails = SortIncomingFiles(fileDetails);
+
+            foreach (FileDetail fileDetail in sortedFileDetails)
+            {
+                ListViewItem item = new ListViewItem(fileDetail.FileName);
+                item.Tag = fileDetail;
+
+                listFiles.Items.Add(item);
+            }
+
+            if (errorFiles.Count > 0)
+            {
+                StringBuilder error = new StringBuilder();
+                error.Append("Some files could not be found, and failed to load:\n\n");
+                foreach(string errorFile in errorFiles)
+                {
+                    error.AppendLine(errorFile);
+                }
+                MessageBox.Show(error.ToString());
+            }
+
+        }
 
 
     }
