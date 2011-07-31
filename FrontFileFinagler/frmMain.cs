@@ -18,9 +18,12 @@ namespace FrontFileFinagler
         {
             InitializeComponent();
 
-            listFiles.DragDrop += new DragEventHandler(listFiles_DragDrop);
-            listFiles.DragEnter += new DragEventHandler(listFiles_DragEnter);
             listFiles.KeyDown += new KeyEventHandler(listFiles_KeyDown);
+
+            FileDragDropHandler fileHandler = new FileDragDropHandler();
+            listFiles.RegisterDragDropHandler(fileHandler);
+            ReorderDragDropHandler reorderHandler = new ReorderDragDropHandler();
+            listFiles.RegisterDragDropHandler(reorderHandler);
         }
 
 
@@ -43,28 +46,6 @@ namespace FrontFileFinagler
             }
         }
 
-        void listFiles_DragEnter(object sender, DragEventArgs e)
-        {
-            if (e.Data.GetDataPresent(DataFormats.FileDrop))
-                e.Effect = DragDropEffects.Copy;
-            else
-                e.Effect = DragDropEffects.None;
-        }
-
-        void listFiles_DragDrop(object sender, DragEventArgs e)
-        {
-            if (e.Data.GetDataPresent(DataFormats.FileDrop))
-            {
-                string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
-
-                // Get the item we're currently dropping onto, if any.
-                Point cp = listFiles.PointToClient(new Point(e.X, e.Y));
-                ListViewItem dragToItem = listFiles.GetItemAt(cp.X, cp.Y);
-
-                LoadFiles(files, dragToItem);
-
-            }   
-        }
 
 
         //--------------------------------------------------------------------------------------
@@ -120,16 +101,11 @@ namespace FrontFileFinagler
 
                 List<string> files = loader.GetFilePaths(file);
 
-                // If there's any currently selected items, insert it after the first one.
-                if (listFiles.SelectedItems.Count > 0)
-                {
-                    LoadFiles(files, listFiles.SelectedItems[0]);
-                }
-                else
-                {
-                    LoadFiles(files, null);
-                }
-                
+                FileListItemServiceResult fileItems = FileListItemService.GetSortedFileListViewItems(files);
+
+                listFiles.AddItemsAtFirstSelected(fileItems.Items);
+                ShowErrors(fileItems);
+
             }
         }
 
@@ -175,81 +151,20 @@ namespace FrontFileFinagler
             }
         }
 
-
-
-        private static IEnumerable<FileDetail> SortIncomingFiles(List<FileDetail> fileDetails)
+        private static void ShowErrors(FileListItemServiceResult result)
         {
-            IEnumerable<FileDetail> sortedFileDetails;
-            string sortBy = ConfigurationManager.AppSettings["sortby"];
-
-            switch (sortBy)
-            {
-                case FileDateConstants.Created:
-                    sortedFileDetails = fileDetails.OrderBy(detail => detail.CreationTime);
-                    break;
-                case FileDateConstants.Accessed:
-                    sortedFileDetails = fileDetails.OrderBy(detail => detail.AccessTime);
-                    break;
-                default:
-                    // By default, let's use Modified.
-                    sortedFileDetails = fileDetails.OrderBy(detail => detail.WriteTime);
-                    break;
-            }
-            return sortedFileDetails;
-        }
-
-
-        private void LoadFiles(IEnumerable<string> files, ListViewItem itemToInsertAfter)
-        {
-            List<FileDetail> fileDetails = new List<FileDetail>();
-            List<string> errorFiles = new List<string>();
-
-            foreach (string fileName in files)
-            {
-                if (File.Exists(fileName))
-                {
-                    FileDetail detail = new FileDetail(fileName);
-
-                    fileDetails.Add(detail);
-                }
-                else
-                {
-                    errorFiles.Add(fileName);
-                }
-            }
-
-            IEnumerable<FileDetail> sortedFileDetails = SortIncomingFiles(fileDetails);
-
-            foreach (FileDetail fileDetail in sortedFileDetails)
-            {
-                ListViewItem item = new ListViewItem(fileDetail.FileName);
-                item.Tag = fileDetail;
-
-                if (itemToInsertAfter == null)
-                {
-                    listFiles.Items.Add(item);
-                }
-                else
-                {
-                    // Insert after the selected item.
-                    ListViewItem newItem = listFiles.Items.Insert(itemToInsertAfter.Index + 1, item);
-                    itemToInsertAfter = newItem;
-                }
-            }
-
-            if (errorFiles.Count > 0)
+            if (result.ErrorFiles.Count > 0)
             {
                 StringBuilder error = new StringBuilder();
                 error.Append("Some files could not be found, and failed to load:\n\n");
-                foreach(string errorFile in errorFiles)
+                foreach (string errorFile in result.ErrorFiles)
                 {
                     error.AppendLine(errorFile);
                 }
+
                 MessageBox.Show(error.ToString());
             }
-
         }
-
 
     }
 }

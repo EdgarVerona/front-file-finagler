@@ -43,6 +43,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DragDropResult.cs" />
+    <Compile Include="IDragDropListHandler.cs" />
     <Compile Include="ListViewReorderable.cs">
       <SubType>Component</SubType>
     </Compile>
