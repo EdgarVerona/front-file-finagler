@@ -57,7 +57,11 @@ namespace FrontFileFinagler
             {
                 string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
 
-                LoadFiles(files);
+                // Get the item we're currently dropping onto, if any.
+                Point cp = listFiles.PointToClient(new Point(e.X, e.Y));
+                ListViewItem dragToItem = listFiles.GetItemAt(cp.X, cp.Y);
+
+                LoadFiles(files, dragToItem);
 
             }   
         }
@@ -116,7 +120,16 @@ namespace FrontFileFinagler
 
                 List<string> files = loader.GetFilePaths(file);
 
-                LoadFiles(files);
+                // If there's any currently selected items, insert it after the first one.
+                if (listFiles.SelectedItems.Count > 0)
+                {
+                    LoadFiles(files, listFiles.SelectedItems[0]);
+                }
+                else
+                {
+                    LoadFiles(files, null);
+                }
+                
             }
         }
 
@@ -186,7 +199,7 @@ namespace FrontFileFinagler
         }
 
 
-        private void LoadFiles(IEnumerable<string> files)
+        private void LoadFiles(IEnumerable<string> files, ListViewItem itemToInsertAfter)
         {
             List<FileDetail> fileDetails = new List<FileDetail>();
             List<string> errorFiles = new List<string>();
@@ -212,7 +225,15 @@ namespace FrontFileFinagler
                 ListViewItem item = new ListViewItem(fileDetail.FileName);
                 item.Tag = fileDetail;
 
-                listFiles.Items.Add(item);
+                if (itemToInsertAfter == null)
+                {
+                    listFiles.Items.Add(item);
+                }
+                else
+                {
+                    // Insert after the selected item.
+                    listFiles.Items.Insert(itemToInsertAfter.Index + 1, item);
+                }
             }
 
             if (errorFiles.Count > 0)
