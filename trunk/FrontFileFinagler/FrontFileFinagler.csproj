@@ -47,21 +47,25 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Constants.cs" />
+    <Compile Include="Constants\Constants.cs" />
+    <Compile Include="DragDropHandlers\FileDragDropHandler.cs" />
+    <Compile Include="DragDropHandlers\ReorderDragDropHandler.cs" />
     <Compile Include="FileDetail.cs" />
-    <Compile Include="FPLPlaylistLoader.cs" />
+    <Compile Include="ListItemService\FileListItemService.cs" />
+    <Compile Include="ListItemService\FileListItemServiceResult.cs" />
+    <Compile Include="PlaylistLoaders\FPLPlaylistLoader.cs" />
     <Compile Include="frmMain.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="frmMain.Designer.cs">
       <DependentUpon>frmMain.cs</DependentUpon>
     </Compile>
-    <Compile Include="IPlaylistLoader.cs" />
-    <Compile Include="M3UPlaylistLoader.cs" />
-    <Compile Include="PlaylistLoadStrategy.cs" />
+    <Compile Include="PlaylistLoaders\IPlaylistLoader.cs" />
+    <Compile Include="PlaylistLoaders\M3UPlaylistLoader.cs" />
+    <Compile Include="PlaylistLoaders\PlaylistLoadStrategy.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="UtilityPath.cs" />
+    <Compile Include="Utilities\UtilityPath.cs" />
     <EmbeddedResource Include="frmMain.resx">
       <DependentUpon>frmMain.cs</DependentUpon>
     </EmbeddedResource>
